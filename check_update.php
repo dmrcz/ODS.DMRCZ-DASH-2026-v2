@@ -1,29 +1,19 @@
 <?php
 $repo = "dmrcz/ods.dmrcz-dash-2026-v2";
-$url = "https://api.github.com";
+$local_hash = "VAS_LOKALNI_COMMIT_HASH"; // Získat např. přes: git rev-parse HEAD
 
-$options = [
-    'http' => [
-        'method' => 'GET',
-        'header' => "User-Agent: PHP-Update-Checker\r\n"
-    ]
-];
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://api.github.com");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_USERAGENT, "PHP-Update-Checker");
 
-$context = stream_context_create($options);
-$response = file_get_contents($url, false, $context);
+$response = json_decode(curl_exec($ch), true);
+curl_close($ch);
 
-if ($response) {
-    $data = json_decode($response, true);
-    $remote_sha = $data['sha'];
-    
-    // Načtení lokálního hashe (pokud existuje)
-    $local_sha = file_exists('version.txt') ? trim(file_get_contents('version.txt')) : '';
+$remote_hash = $response['sha'] ?? null;
 
-    if ($remote_sha !== $local_sha) {
-        echo "Aktualizace je k dispozici! (Hash: $remote_sha)\n";
-        // Zde můžete spustit 'git pull' nebo stáhnout zip
-    } else {
-        echo "Aplikace je aktuální.\n";
-    }
+if ($remote_hash && $remote_hash !== $local_hash) {
+    echo "Aktualizace je k dispozici! (Remote: $remote_hash)";
+} else {
+    echo "Verze je aktuální.";
 }
-?>
