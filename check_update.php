@@ -1,5 +1,5 @@
 <?php
-$repo = "dmrcz/ods.dmrcz-dash-2026-v2";
+$repo = "https://github.com/dmrcz/ODS.DMRCZ-DASH-2026-v2.git";
 $local_hash = "b997efe84697bebe6676caeb30cc12dc9b609173"; // Získat např. přes: git rev-parse HEAD
 
 $ch = curl_init();
