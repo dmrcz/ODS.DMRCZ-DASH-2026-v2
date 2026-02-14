@@ -1,19 +1,31 @@
-<?php
-$repo = "https://github.com/dmrcz/ODS.DMRCZ-DASH-2026-v2.git";
-$local_hash = "b997efe84697bebe6676caeb30cc12dc9b609173"; // Získat např. přes: git rev-parse HEAD
+#!/bin/bash
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://api.github.com");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_USERAGENT, "PHP-Update-Checker");
+# Konfigurace
+REPO_URL="https://github.com/dmrcz/ods.dmrcz-dash-2026-v2.git"
+BRANCH="main" # Změňte na master, pokud nepoužíváte main
 
-$response = json_decode(curl_exec($ch), true);
-curl_close($ch);
+# Ověření, zda jsme v git repozitáři
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo "Chyba: Aktuální adresář není Git repozitář."
+    exit 1
+fi
 
-$remote_hash = $response['sha'] ?? null;
+# Stažení metadat z remote bez úpravy lokálních souborů
+echo "Kontroluji aktualizace na $REPO_URL..."
+git fetch origin "$BRANCH" -q
 
-if ($remote_hash && $remote_hash !== $local_hash) {
-    echo "Aktualizace je k dispozici! (Remote: $remote_hash)";
-} else {
-    echo "Verze je aktuální.";
-}
+# Porovnání lokální verze se vzdálenou
+UPSTREAM=${1:-'@{u}'}
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse "$UPSTREAM")
+BASE=$(git merge-base @ "$UPSTREAM")
+
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "Aplikace je aktuální."
+elif [ "$LOCAL" = "$BASE" ]; then
+    echo "K DISPOZICI JSOU AKTUALIZACE! Spusťte 'git pull' pro aktualizaci."
+elif [ "$REMOTE" = "$BASE" ]; then
+    echo "Máte lokální změny, které nejsou na serveru (Need to push)."
+else
+    echo "Větve se rozcházejí (Diverged)."
+fi
