@@ -11,7 +11,7 @@ if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
 fi
 
 # Stažení metadat z remote bez úpravy lokálních souborů
-echo "Kontroluji aktualizace na $REPO_URL..."
+echo " Kontroluji aktualizace na $REPO_URL..."
 git fetch origin "$BRANCH" -q
 
 # Porovnání lokální verze se vzdálenou
